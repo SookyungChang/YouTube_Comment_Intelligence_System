@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: youtube_comment_intelligence_system
+Version: 0.1.0
+Summary: YouTube commments analysis by BERT-transformer, BERTopic, and RAG
+Requires-Python: >=3.12
+Requires-Dist: google-api-python-client
+Requires-Dist: google-auth
+Requires-Dist: pandas
+Requires-Dist: langdetect
+Requires-Dist: datasets
+Provides-Extra: dev
+Requires-Dist: dotenv; extra == "dev"

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "youtube_comment_intelligence_system"
+version = "0.1.0"
+description = "YouTube commments analysis by BERT-transformer, BERTopic, and RAG"
+requires-python = ">=3.12"
+dependencies = [
+    "google-api-python-client",
+    "google-auth",
+    "pandas",
+    "langdetect",
+    "datasets",
+]
+[project.optional-dependencies]
+dev = [
+    "dotenv"
+]
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
