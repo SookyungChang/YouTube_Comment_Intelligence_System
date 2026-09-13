@@ -3,8 +3,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Build / packaging artifacts
+*.txt
+src/youtube_comment_intelligence_system.egg-info/*
+
 # Virtual environment
 .venv/
+.vscode/
 
 # Environment variables / secrets
 .env
+
+# Data
+data/

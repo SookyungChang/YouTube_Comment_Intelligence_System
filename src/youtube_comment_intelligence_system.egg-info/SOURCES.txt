@@ -1,6 +1,0 @@
-pyproject.toml
-src/youtube_comment_intelligence_system.egg-info/PKG-INFO
-src/youtube_comment_intelligence_system.egg-info/SOURCES.txt
-src/youtube_comment_intelligence_system.egg-info/dependency_links.txt
-src/youtube_comment_intelligence_system.egg-info/requires.txt
-src/youtube_comment_intelligence_system.egg-info/top_level.txt

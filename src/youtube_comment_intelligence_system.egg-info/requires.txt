@@ -1,8 +1,0 @@
-google-api-python-client
-google-auth
-pandas
-langdetect
-datasets
-
-[dev]
-dotenv
