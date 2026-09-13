@@ -1,5 +1,4 @@
-import sys
-import os
+# data/fetchData.py # load YouTube comments by API
 
 from googleapiclient.discovery import build
 import pandas as pd
@@ -63,7 +62,7 @@ def get_comments(video_id: str, max_results: int, max_pages: int) -> pd.DataFram
 if __name__ == "__main__":
     video_id = "SbNDmAJBtyU" # example vdieo id
     comments_df = get_comments(
-        video_id, config.MAX_RESULTS, config.MAX_PAGES
+        video_id, 30, 1
     )
     english_comments_df = filter_english_comments(comments_df)
-    print(english_comments_df)
+    english_comments_df.to_csv(config.DATA_DIR / 'comments_sample.csv', index=False)
