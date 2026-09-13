@@ -15,4 +15,4 @@ src/youtube_comment_intelligence_system.egg-info/*
 .env
 
 # Data
-data/
+*.csv
