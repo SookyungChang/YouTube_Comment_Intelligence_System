@@ -17,11 +17,12 @@ class Config:
     GROQ_API_KEY: str = os.getenv('GROQ_API_KEY')
 
     # Comment fetching limits
-    MAX_RESULTS: int = int(os.getenv("MAX_RESULTS", 1000))
-    MAX_PAGES: int = int(os.getenv("MAX_PAGES", 1000))
+    MAX_RESULTS: int = int(os.getenv("MAX_RESULTS", 100))
+    MAX_PAGES: int = int(os.getenv("MAX_PAGES", 3))
 
-    # 3. 모델 설정
-    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "nomic-embed-text:latest")
-    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "mistral-small:latest")
+    # Inference setting
+    TRAINED_MODEL_ID = "sweetguma/bert-sentiment-model"
+    BATCH_SIZE: int = 32
+    MAX_LENGTH: int = 128 # comment max length
 
 config = Config()
