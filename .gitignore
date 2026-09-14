@@ -16,3 +16,7 @@ src/youtube_comment_intelligence_system.egg-info/*
 
 # Data
 *.csv
+*.db
+
+# Test
+test.*
