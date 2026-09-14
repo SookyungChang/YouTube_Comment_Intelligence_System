@@ -1,9 +1,9 @@
 # data/preprocess.py # clean loaded comments
 
 import pandas as pd
-from datasets import Dataset, DatasetDict
 from langdetect import detect_langs
 from langdetect.lang_detect_exception import LangDetectException
+from lingua import Language, LanguageDetectorBuilder
 import re
 
 def remove_urls(text: str) -> str:
@@ -17,22 +17,26 @@ def remove_urls(text: str) -> str:
 def safe_detect(text: str) -> str:
     """Try to detect the language of a comment. Returns result or None if uncertain."""
 
+    detector = LanguageDetectorBuilder.from_all_languages().build() # returns a list of language guesses with probabilities
+
     # Skip empty or very short texts — too little content to detect reliably
     if not text or len(str(text)) > 5:
         try:
-                # detect_langs() returns a list of language guesses with probabilities
-                # We take the top guess [0]
-                res = detect_langs(text)[0]
-        
-                # Only accept if it's English AND the model is highly confident (>90%)
-                if res.lang == "en" and res.prob > 0.9:
-                    return res
+            confidence_values = detector.compute_language_confidence_values(text)
+            top_result = confidence_values[0] # We take the top guess [0]
+            lang_code = top_result.language.iso_code_639_1.name  # 'EN'
+            confidence = top_result.value  # 0.9999... (0.0 - 1.0)
+            
+            if lang_code == "EN" and confidence > 0.01: # Only accept if it's English AND the model is highly confident
+                return lang_code
+            else:
+                if lang_code != "en":
+                    print(f"Skipping non-English: {text}")
+                    print(f"Language: {lang_code}, Confidence: {confidence:.4f}")
+
                 else:
-                    if res.lang != "en":
-                        print(f"Skipping non-English: {text})")
-                    else:
-                        print(f"Skipping low-confidence comment: {text} (detected: {res})")
-                    return None  # Return None for non-English or low-confidence results
+                    print(f"Skipping low-confidence comment: {text} (detected: {confidence:.4f})")
+                return None  # Return None for non-English or low-confidence results
         
         except LangDetectException:
             # If detection fails entirely (e.g. unrecognizable characters), just skip it
@@ -55,3 +59,6 @@ def filter_english_comments(df: pd.DataFrame) -> pd.DataFrame:
 
     # Step 4: Drop rows where language is null (non-English, low confidence, or too short)
     return df[df["language"].notnull()].reset_index(drop=True)
+
+if __name__ == "__main__":
+    safe_detect("This is my first comment.")
