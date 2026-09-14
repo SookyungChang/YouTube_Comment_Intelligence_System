@@ -1,47 +1,52 @@
 # data/storage.py # df -> db file
 
 import sqlite3
-import json
+import numpy as np
 import pandas as pd
-from datetime import datetime, timezone
+from ycis.config import Config
+config = Config()
 
-labels = {0: "negative", 1: "positive"}
+def save_to_db_with_embedding(video_id: str, df: pd.DataFrame, db_name: str):
+    db_path = config.DB_DIR / db_name
+    table_name = video_id.replace("-", "_")
 
+    # Embedding computation and binary conversion (BLOB)
+    texts = df["text"].fillna("").astype(str).tolist()
+    embeddings = config.SHARED_EMBEDDING_MODEL.embed_documents(texts)
+    vec_bytes_list = [
+        np.array(emb, dtype=np.float32).tobytes() for emb in embeddings
+    ]
 
-def save_to_db(
-    video_id: str, 
-    df: pd.DataFrame, 
-    # topic_info: pd.DataFrame, 
-    # sentiment_label: int
-):
-    """Save full prediction DataFrame to SQLite, skipping duplicate commentIds."""
-    df = df.copy()
-    df["video_id"] = video_id
-    # df["sentiment_label"] = sentiment_label
-    df["analyzed_at"] = datetime.now(timezone.utc).isoformat()
+    save_df = pd.DataFrame()
 
-    # Serialize list columns in topic_info for SQLite compatibility
-    topic_info = topic_info.copy()
-    if "Representation" in topic_info.columns:
-        topic_info["Representation"] = topic_info["Representation"].apply(json.dumps)
-    if "Representative_Docs" in topic_info.columns:
-        topic_info["Representative_Docs"] = topic_info["Representative_Docs"].apply(
-            json.dumps
+    if "commentId" in df.columns:
+        save_df["id"] = df["commentId"].astype(str)
+    else:
+        save_df["id"] = df.index.astype(str)
+
+    save_df["author"] = df['author'].astype(str)
+    save_df["text"] = texts
+    save_df["like_count"] = df['likeCount'].astype(int)
+    save_df["published_at"] = df['publishedAt'].astype(str)
+    save_df["sentiment_label"] = df["bert_preds"].astype(int)
+    save_df["embedding"] = vec_bytes_list
+
+    with sqlite3.connect(db_path) as conn:
+        save_df.to_sql(
+            name=table_name, con=conn, if_exists="append", index=False
         )
 
-    with sqlite3.connect(DB_PATH) as conn:
-        df.to_sql(
-            f"comment_results_{labels[sentiment_label]}",
-            con=conn,
-            if_exists="replace",
-            index=False,
-        )
+        cursor = conn.cursor()
 
-        topic_info.to_sql(
-            f"topic_info_{labels[sentiment_label]}",
-            con=conn,
-            if_exists="replace",
-            index=False,
-        )
+        cursor.execute(f"""
+            DELETE FROM {table_name}
+            WHERE rowid NOT IN (
+                SELECT MAX(rowid)
+                FROM {table_name}
+                GROUP BY id
+            )
+        """)
+    print(f"saved to db file: {db_name}")
 
-    print(f"✅ Saved {len(df)} comments for video {video_id}")
+
+
