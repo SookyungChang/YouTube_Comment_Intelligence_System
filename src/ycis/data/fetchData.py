@@ -2,7 +2,6 @@
 
 from googleapiclient.discovery import build
 import pandas as pd
-from ycis.data.preprocess import filter_english_comments
 from ycis.config import Config
 
 config = Config()
@@ -10,7 +9,7 @@ config = Config()
 # Load the YouTube API key from environment variables (keeps it secure) and build its client using the google-api-python-client library
 youtube = build('youtube', 'v3', developerKey=config.YOUTUBE_API_KEY)
 
-def get_comments(video_id: str, max_results: int, max_pages: int) -> pd.DataFrame:
+def get_comments(video_id: str, max_results: int = config.MAX_RESULTS, max_pages: int = config.MAX_PAGES) -> pd.DataFrame:
     """Fetch comments from a YouTube video using the YouTube Data API v3."""
 
     comments = []  # Will hold all collected comment data
@@ -57,12 +56,3 @@ def get_comments(video_id: str, max_results: int, max_pages: int) -> pd.DataFram
 
     # Return all collected comments as a pandas DataFrame for easy analysis
     return pd.DataFrame(comments)
-
-
-if __name__ == "__main__":
-    video_id = "SbNDmAJBtyU" # example vdieo id
-    comments_df = get_comments(
-        video_id, 30, 1
-    )
-    english_comments_df = filter_english_comments(comments_df)
-    english_comments_df.to_csv(config.DATA_DIR / 'comments_sample.csv', index=False)
