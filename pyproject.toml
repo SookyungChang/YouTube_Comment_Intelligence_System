@@ -11,16 +11,24 @@ dependencies = [
     "google-api-python-client",
     "google-auth",
     "pandas",
-    "langdetect",
     "datasets",
     "torch",
     "optimum[onnxruntime]>=1.16.0",
-    "dotenv"
+    "dotenv",
+    "langchain-huggingface",
+    "sentence-transformers",
+    "lingua-language-detector",
+    "hdbscan",
+    "bertopic",
+    "nbformat",
+    
 ]
 
 [project.optional-dependencies]
 dev = [
-    "ipykernel"
+    "langdetect",
+    "ipykernel",
+    "fasttext",
 ]
 
 # uv CPU PyTorch stroage setting
