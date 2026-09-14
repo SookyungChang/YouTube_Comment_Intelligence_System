@@ -4,15 +4,10 @@ import torch
 import numpy as np
 from optimum.onnxruntime import ORTModelForSequenceClassification
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from ycis.data.fetchData import get_comments
-from ycis.data.preprocess import filter_english_comments
-from huggingface_hub import snapshot_download
+
 
 from ycis.config import Config
 config = Config()
-
-labels = {0: "negative", 1: "positive"}
-
 
 class Predictor:
     def __init__(self, model_path, device=None):
@@ -32,9 +27,9 @@ class Predictor:
                 provider="CPUExecutionProvider",  # ONNX form
             )
 
-    def predict_text(self, text):
+    def predict_text(self, text, max_length=config.MAX_LENGTH):
         if self.device.type == "cuda":
-            inputs = self.tokenizer(text, return_tensors="pt").to(self.device)
+            inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=max_length).to(self.device)
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
@@ -82,13 +77,24 @@ class Predictor:
                     logits = self.model(**inputs).logits
                 probs = torch.softmax(logits, dim=1).cpu().numpy()
             else:
-                outputs = self.model(**inputs)
+                # outputs = self.model(**inputs)
+                # logits = outputs.logits if hasattr(outputs, "logits") else outputs[0]
+                # if hasattr(logits, "detach"):
+                #     logits = logits.detach().cpu().numpy()
+                
+                # exp_logits = np.exp(logits - np.max(logits, axis=-1, keepdims=True))
+                # probs = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
+
+                input_dict = {k: v.numpy() for k, v in inputs.items()}
+                outputs = self.model(**input_dict)
+
                 logits = outputs.logits if hasattr(outputs, "logits") else outputs[0]
                 if hasattr(logits, "detach"):
                     logits = logits.detach().cpu().numpy()
-                
+
                 exp_logits = np.exp(logits - np.max(logits, axis=-1, keepdims=True))
                 probs = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
+
 
             labels = np.argmax(probs, axis=1).tolist()
             all_labels.extend(labels)
@@ -102,13 +108,6 @@ class Predictor:
         return df
 
 if __name__ == "__main__":
-    bert_path = snapshot_download(repo_id=config.TRAINED_MODEL_ID)
+    bert_path = config.TRAINED_MODEL_PATH
     bert = Predictor(bert_path)
-    result = bert.predict_text("I’m super frustrated by it.")
-    print(f"Text: '{result['text']}'| prediction: {labels[result['prediction']]} | confidence: {result['confidence']}")
-
-    video_id = "SbNDmAJBtyU" # example vdieo id
-    comments_df = get_comments(video_id, 30, 1)
-    english_comments_df = filter_english_comments(comments_df)
-    results = bert.predict_df(english_comments_df)
-    print(results.to_csv(config.DATA_DIR / 'comments_sample.csv', index=False))
+    print(bert.predict_text("WHO ELSE HAVE FAKE FRIENDS? 🙁"))
