@@ -1,5 +1,4 @@
 # bert_predictor.py # sentiment analysis by fine-tuned BERT transformer
-
 import torch
 import numpy as np
 from optimum.onnxruntime import ORTModelForSequenceClassification
@@ -15,16 +14,13 @@ class Predictor:
             "cuda" if torch.cuda.is_available() else "cpu"
         )
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-
         if self.device == "cuda":
             self.model = AutoModelForSequenceClassification.from_pretrained(
                 model_path
             ).to(self.device)
         else:
             self.model = ORTModelForSequenceClassification.from_pretrained(
-                model_path,
-                export=False,
-                provider="CPUExecutionProvider",  # ONNX form
+                config.PROJECT_ROOT / "onnx_models/bert-sentiment-model"
             )
 
     def predict_text(self, text, max_length=config.MAX_LENGTH):
