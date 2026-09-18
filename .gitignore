@@ -22,7 +22,6 @@ myNote.md
 
 # Test
 test.*
-convert_onnx.py
 
 # Model
 onnx_models/
