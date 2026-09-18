@@ -3,7 +3,7 @@ import hdbscan
 import numpy as np
 import pandas as pd
 from bertopic import BERTopic
-
+from umap import UMAP
 
 def update_topics_in_db(
     db_path: str,
@@ -31,25 +31,34 @@ def update_topics_in_db(
     texts = df_sentiment["text"].tolist()
     ids = df_sentiment["id"].tolist()
 
+    umap_model = UMAP(
+        n_neighbors=15,
+        n_components=5,
+        min_dist=0.0,
+        metric="cosine",
+        random_state=42,
+    )
+
     # BERTopic 
     if hdbscan_model is None:
         hdbscan_model = hdbscan.HDBSCAN(
             min_cluster_size=min_cluster_size,
             metric="euclidean",
+            cluster_selection_method="eom",
             prediction_data=True,
         )
 
-    topic_model = BERTopic(hdbscan_model=hdbscan_model)
+    topic_model = BERTopic(umap_model=umap_model, hdbscan_model=hdbscan_model)
     topics, _ = topic_model.fit_transform(texts, embeddings=embeddings)
 
-    # Outlier
-    if -1 in topics:
-        new_topics = topic_model.reduce_outliers(
-            texts, topics, strategy="c-tf-idf"
-        )
-        topic_model.update_topics(texts, topics=new_topics)
-    else:
-        new_topics = topics
+    # Outlier Reduction
+    # if -1 in topics:
+    #     new_topics = topic_model.reduce_outliers(
+    #         texts, topics, strategy="c-tf-idf"
+    #     )
+    #     topic_model.update_topics(texts, topics=new_topics)
+    # else:
+    #     new_topics = topics
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
@@ -61,7 +70,7 @@ def update_topics_in_db(
             pass
 
         # (topic_number, id) 
-        update_data = list(zip([int(t) for t in new_topics], ids))
+        update_data = list(zip([int(t) for t in topics], ids)) # new_topics -> topics
 
         cursor.executemany(
             f"""
@@ -71,6 +80,7 @@ def update_topics_in_db(
         """,
             update_data,
         )
+        conn.commit()
 
     # topic_info: Topic ID, Count, Name, Representation...
     topic_info = topic_model.get_topic_info()
