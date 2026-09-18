@@ -6,6 +6,8 @@ __pycache__/
 # Build / packaging artifacts
 *.txt
 src/youtube_comment_intelligence_system.egg-info/*
+.hf-cache/
+myNote.md
 
 # Virtual environment
 .venv/
@@ -20,3 +22,7 @@ src/youtube_comment_intelligence_system.egg-info/*
 
 # Test
 test.*
+convert_onnx.py
+
+# Model
+onnx_models/
