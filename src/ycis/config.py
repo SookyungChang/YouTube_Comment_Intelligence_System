@@ -13,7 +13,8 @@ class Config:
     PROJECT_ROOT: Path = Path(__file__).resolve().parents[2]
     DATA_DIR: Path = PROJECT_ROOT / "data"
     DB_DIR: Path = DATA_DIR / "DB"
-    JSON_DIR: Path = DATA_DIR / "json"
+    def __post_init__(self):
+        self.DB_DIR.mkdir(parents=True, exist_ok=True)
 
     # APIs
     YOUTUBE_API_KEY: str = os.getenv('YOUTUBE_API_KEY')
