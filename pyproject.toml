@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "youtube_comment_intelligence_system"
-version = "0.2.0"
+version = "1.0.0"
 description = "YouTube commments analysis by BERT-transformer, BERTopic, and RAG"
 requires-python = ">=3.12"
 dependencies = [
@@ -21,6 +21,8 @@ dependencies = [
     "hdbscan",
     "bertopic",
     "nbformat",
+    "langchain-groq",
+    "gradio"
     
 ]
 
