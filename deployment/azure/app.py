@@ -1,29 +1,17 @@
-# app.py — Gradio version for Hugging Face Spaces
-print("0", flush=True)
+# app.py — Gradio version for Azure
+
 import os
-print("1", flush=True)
 import gradio as gr
-print("2", flush=True)
 import pandas as pd
-print("3", flush=True)
 
 from ycis.config import Config
-print("4", flush=True)
 from ycis.data.fetchData import get_comments
-print("5", flush=True)
 from ycis.data.preprocess import filter_english_comments
-print("6", flush=True)
 from ycis.data.storage import save_to_db_with_embedding
-print("7", flush=True)
 from ycis.topic_modeling import update_topics_in_db
-print("8", flush=True)
 from ycis.inference import Predictor
-print("9", flush=True)
 from ycis.llm import get_comments_from_db, summarize_topic_comments
-print("10", flush=True)
-
 config = Config()
-print("11", flush=True)
 
 labels = {0: "negative", 1: "positive"}
 
@@ -31,15 +19,17 @@ labels = {0: "negative", 1: "positive"}
 # Model loading (once at startup)
 # ─────────────────────────────────────────
 
-print("⏳ Loading BERT model...")
+print("⏳ Loading BERT model...", flush=True)
 
+print("before BERT", flush=True)
 bert_path = config.TRAINED_MODEL_PATH
 predictor = Predictor(bert_path)
+print("after BERT", flush=True)
 
 DB_NAME = "comments_cache.db"
 DB_PATH = config.DB_DIR / DB_NAME
 
-print("✅ BERT model loaded!")
+print("✅ BERT model loaded!", flush=True)
 
 
 # ─────────────────────────────────────────
@@ -355,13 +345,18 @@ with gr.Blocks(theme=theme, title="🎬 YouTube Comment Analyzer") as demo:
         """
     )
 
-is_hf_space = "SPACE_ID" in os.environ
-if is_hf_space:
-    demo.launch()
-else:
-    port = int(os.environ.get("PORT", 8080))
-    demo.launch(server_name="0.0.0.0", 
-                server_port=8080)
+
+print("🔥 BEFORE LAUNCH", flush=True)
+
+port = int(os.environ.get("PORT", 7860))
+
+print("🔥 UI CREATED", flush=True)
+
+demo.launch(
+    server_name="0.0.0.0",
+    server_port=port,
+    show_error=True,
+)
 
 if __name__ == "__main__":
     pass
