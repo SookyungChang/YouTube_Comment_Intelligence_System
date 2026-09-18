@@ -28,8 +28,9 @@ class Config:
     TRAINED_MODEL_PATH = snapshot_download(repo_id=TRAINED_MODEL_ID)
     BATCH_SIZE: int = 32
     MAX_LENGTH: int = 128 # comment max length
-    SHARED_EMBEDDING_MODEL = HuggingFaceEmbeddings(
-    model_name="all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
-)
+    SHARED_EMBEDDING_MODEL = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2", model_kwargs={"device": "cpu"})
+
+    # LLM setting
+    LLM_MODEL_NAME = "openai/gpt-oss-20b"
 
 config = Config()
